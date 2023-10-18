@@ -2,7 +2,6 @@
 #define __FIB_H__
 
 #include <unordered_map>
-
 namespace dsa {
 namespace recursion {
 template <typename UnsignedInteger>
@@ -40,7 +39,7 @@ UnsignedInteger fibCached(UnsignedInteger n) {
 }
 } // namespace recursion
 
-namespace iteration {
+inline namespace iteration {
 template <typename UnsignedInteger>
 UnsignedInteger fib(UnsignedInteger n) {
     if (n == 0) {

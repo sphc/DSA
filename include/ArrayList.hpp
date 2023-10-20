@@ -6,11 +6,16 @@
 #include <functional>
 #include <iterator>
 #include <limits>
+#include <map>
 #include <memory>
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 namespace dsa {
 
@@ -108,8 +113,33 @@ private:
     inline static std::allocator<ElementType> __allocator{};
     inline static constexpr size_type __DEFAULT_CAPACITY{10};
 
-    void checkIndex(size_type index);
-    void ensureCapacity(size_type needCapacity);
+    enum class __OperationWithIndex {
+        GET,
+        ADD,
+        SET,
+        REMOVE
+    };
+
+    std::map<__OperationWithIndex, std::string> __operationName{
+        {__OperationWithIndex::GET, "get"},
+        {__OperationWithIndex::ADD, "add"},
+        {__OperationWithIndex::SET, "set"},
+        {__OperationWithIndex::REMOVE, "remove"}};
+
+    static auto __accessIndexValid{
+        [](size_type index, size_type size) { return index < size; }};
+
+    std::map<__OperationWithIndex, std::function<bool(size_type index, size_type size)>> __indexIsValid{
+        {__OperationWithIndex::GET, __accessIndexValid},
+        {__OperationWithIndex::ADD, [](size_type index, size_type size) { return index <= size; }},
+        {__OperationWithIndex::SET, __accessIndexValid},
+        {__OperationWithIndex::REMOVE, __accessIndexValid}};
+
+    void __throwOutOfRangeException(const std::string &operation, size_type operatePos);
+    void __checkIndex(__OperationWithIndex operation, size_type index);
+    void __reallocToFitNewCapacity(size_type newCapacity);
+    void __ensureCapacity(size_type needCapacity);
+    void __shrinkIfNecessary();
 
     class iterator;
     iterator begin();
@@ -165,13 +195,13 @@ void ArrayList<ElementType>::add(const ElementType &element) {
 
 template <typename ElementType>
 [[nodiscard]] const ElementType &ArrayList<ElementType>::get(size_type index) const {
-    checkIndex(index);
+    __checkIndex(__OperationWithIndex::GET, index);
     return __data[index];
 }
 
 template <typename ElementType>
 ElementType ArrayList<ElementType>::set(size_type index, const ElementType &element) {
-    checkIndex(index);
+    __checkIndex(__OperationWithIndex::SET, index);
     ElementType old{std::move(__data[index])};
     __data[index] = element;
     return old;
@@ -179,10 +209,8 @@ ElementType ArrayList<ElementType>::set(size_type index, const ElementType &elem
 
 template <typename ElementType>
 void ArrayList<ElementType>::add(size_type index, const ElementType &element) {
-    if (index > size()) {
-        throw std::out_of_range("");
-    }
-    ensureCapacity(size() + 1);
+    __checkIndex(__OperationWithIndex::ADD, index);
+    __ensureCapacity(size() + 1);
     // 这种情况无需移动元素，直接在尾部构造
     if (index == size()) {
         __allocator.construct(__data + __size++, element);
@@ -197,10 +225,11 @@ void ArrayList<ElementType>::add(size_type index, const ElementType &element) {
 
 template <typename ElementType>
 ElementType ArrayList<ElementType>::remove(size_type index) {
-    checkIndex(index);
+    __checkIndex(__OperationWithIndex::REMOVE, index);
     ElementType old{std::move(__data[index])};
     std::move(begin() + index + 1, end(), begin() + index);
     __allocator.destroy(__data + __size--);
+    __shrinkIfNecessary();
     return old;
 }
 
@@ -225,25 +254,46 @@ template <typename ElementType>
 }
 
 template <typename ElementType>
-void ArrayList<ElementType>::checkIndex(size_type index) {
-    if (index >= size()) {
-        std::ostringstream sstream{};
-        sstream << "size of ArrayList: " << size() << ", current access pos: " << index << ".";
-        throw std::out_of_range(sstream.str());
+void ArrayList<ElementType>::__throwOutOfRangeException(const std::string &operation, size_type operatePos) {
+    std::ostringstream sstream{};
+    sstream << "operation: " << operation << " [size of ArrayList: " << size() << ", try to operate at pos: " << operatePos << "].";
+    throw std::out_of_range(sstream.str());
+}
+
+template <typename ElementType>
+void ArrayList<ElementType>::__checkIndex(__OperationWithIndex operation, size_type index) {
+    if (!__indexIsValid[operation](index, size())) {
+        __throwOutOfRangeException(__operationName[operation], index);
     }
 }
 
 template <typename ElementType>
-void ArrayList<ElementType>::ensureCapacity(size_type needCapacity) {
+void ArrayList<ElementType>::__reallocToFitNewCapacity(size_type newCapacity) {
+#ifdef DEBUG
+    std::cout << "__reallocToFitNewCapacity() [newCapacity = " << newCapacity << ", __capacity = " << __capacity << ", __size = " << __size << "]." << std::endl;
+    assert(__size <= newCapacity);
+#endif
+    auto newData{__allocator.allocate(newCapacity)};
+    for (size_type i{0}; i < size(); ++i) {
+        __allocator.construct(newData + i, std::move(__data[i]));
+        __allocator.destroy(__data + i);
+    }
+    __allocator.deallocate(__data, __capacity);
+    __data = newData;
+    __capacity = newCapacity;
+}
+
+template <typename ElementType>
+void ArrayList<ElementType>::__ensureCapacity(size_type needCapacity) {
     if (needCapacity > __capacity) {
-        ElementType *newData{__allocator.allocate(__capacity << 2)};
-        for (size_type i{0}; i < size(); ++i) {
-            __allocator.construct(newData + i, std::move(__data[i]));
-            __allocator.destroy(__data + i);
-        }
-        __allocator.deallocate(__data, __capacity);
-        __data = newData;
-        __capacity <<= 2;
+        __reallocToFitNewCapacity(__capacity << 1);
+    }
+}
+
+template <typename ElementType>
+void ArrayList<ElementType>::__shrinkIfNecessary() {
+    if (__size < __capacity >> 2) {
+        __reallocToFitNewCapacity(__capacity >> 2);
     }
 }
 

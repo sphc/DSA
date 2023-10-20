@@ -120,16 +120,16 @@ private:
         REMOVE
     };
 
-    std::map<__OperationWithIndex, std::string> __operationName{
+    inline static std::map<__OperationWithIndex, std::string> __operationName{
         {__OperationWithIndex::GET, "get"},
         {__OperationWithIndex::ADD, "add"},
         {__OperationWithIndex::SET, "set"},
         {__OperationWithIndex::REMOVE, "remove"}};
 
-    static auto __accessIndexValid{
+    inline static auto __accessIndexValid{
         [](size_type index, size_type size) { return index < size; }};
 
-    std::map<__OperationWithIndex, std::function<bool(size_type index, size_type size)>> __indexIsValid{
+    inline static std::map<__OperationWithIndex, std::function<bool(size_type index, size_type size)>> __indexIsValid{
         {__OperationWithIndex::GET, __accessIndexValid},
         {__OperationWithIndex::ADD, [](size_type index, size_type size) { return index <= size; }},
         {__OperationWithIndex::SET, __accessIndexValid},

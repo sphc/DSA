@@ -5,13 +5,17 @@
 #include <limits>
 #include <string>
 
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 namespace dsa {
 
 /*
  * @Author       : sphc
  * @Date         : 2023-10-19 13:54:08
  * @LastEditors  : sphc
- * @LastEditTime : 2023-10-21 13:09:16
+ * @LastEditTime : 2023-10-21 13:58:15
  * @FilePath     : /include/List.hpp
  * @Description  : List 集合接口
  */
@@ -21,6 +25,8 @@ public:
     using size_type = std::size_t;
     // TODO: check npos
     inline static constexpr size_type npos{std::numeric_limits<size_type>::max()};
+
+    virtual ~List() = 0;
 
     /**
      * @description: 清除集合中的所有元素
@@ -99,22 +105,25 @@ public:
     [[nodiscard]] virtual std::string toString(std::function<std::string(const ElementType &)> toString) const = 0;
 
 protected:
-    enum class _ListOperation {
-        CLEAR,
-        SIZE,
-        IS_EMPTY,
-        CONTAINS,
-        ADD,
-        ADD_BY_INDEX,
-        GET,
-        SET,
-        REMOVE,
-        INDEX_OF,
-        TO_STRING
-    };
+    enum class _ListOperation;
 
     template <_ListOperation operation>
     static std::string _getOperationName();
+};
+
+template <typename ElementType>
+enum class List<ElementType>::_ListOperation {
+    CLEAR,
+    SIZE,
+    IS_EMPTY,
+    CONTAINS,
+    ADD,
+    ADD_BY_INDEX,
+    GET,
+    SET,
+    REMOVE,
+    INDEX_OF,
+    TO_STRING
 };
 
 template <typename ElementType>
@@ -145,6 +154,13 @@ std::string List<ElementType>::_getOperationName() {
     } else {
         return "unknow";
     }
+}
+
+template <typename ElementType>
+List<ElementType>::~List() {
+#ifdef DEBUG
+    std::cout << "List destructed" << std::endl;
+#endif
 }
 
 } // namespace dsa

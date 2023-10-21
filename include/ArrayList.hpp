@@ -14,28 +14,31 @@
 #include <string>
 
 #ifdef DEBUG
+#include <cassert>
 #include <iostream>
 #endif
 
 namespace dsa {
 
-/**
- * @author: sphc
- * @date: 2023-10-18 15:23:00
+/*
+ * @Author       : sphc
+ * @Date         : 2023-10-18 13:32:32
+ * @LastEditors  : sphc
+ * @LastEditTime : 2023-10-21 13:45:49
+ * @FilePath     : /include/ArrayList.hpp
+ * @Description  : List 集合数组实现
  */
 template <typename ElementType>
 class ArrayList final : public AbstractList<ElementType> {
 public:
-    using size_type = typename std::allocator<ElementType>::size_type;
-    // TODO: check npos
-    inline static constexpr size_type npos{std::numeric_limits<size_type>::max()};
+    using size_type = typename AbstractList<ElementType>::size_type;
 
     ArrayList(size_type capacity = __DEFAULT_CAPACITY);
     ArrayList(const ElementType &) = delete;
     ArrayList(ElementType &&) = delete;
     ArrayList &operator=(const ElementType &) = delete;
     ArrayList &operator=(ElementType &&) = delete;
-    ~ArrayList();
+    ~ArrayList() override;
 
     /**
      * @description: 清除集合中的所有元素
@@ -243,7 +246,7 @@ ElementType ArrayList<ElementType>::remove(size_type index) {
 template <typename ElementType>
 [[nodiscard]] typename ArrayList<ElementType>::size_type ArrayList<ElementType>::indexOf(const ElementType &element) const {
     auto it{std::find(cbegin(), cend(), element)};
-    return it != cend() ? it - cbegin() : npos;
+    return it != cend() ? it - cbegin() : AbstractList<ElementType>::npos;
 }
 
 template <typename ElementType>

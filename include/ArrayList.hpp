@@ -128,10 +128,12 @@ private:
     size_type __size;
     size_type __capacity;
 
-    inline static std::allocator<ElementType> __allocator{};
+    using Allocator = std::allocator<ElementType>;
+    using AllocatorTraits = std::allocator_traits<Allocator>;
+    inline static Allocator __allocator{};
     inline static constexpr size_type __DEFAULT_CAPACITY{10};
 
-    using __ListOperation = typename AbstractList<ElementType>::_ListOperation;
+    using __ListOperation = typename AbstractList<ElementType>::_Operation;
     /**
      * @description: 是否是需要传入索引参数的操作
      * @return      {bool} 需要传入索引参数返回 true，否则返回 false
@@ -147,6 +149,7 @@ private:
     void __reallocToFitNewCapacity(size_type newCapacity);
     void __ensureCapacity(size_type needCapacity);
     void __shrinkIfNecessary();
+    void __destroyAllElement();
 
     class iterator;
     iterator begin();
@@ -162,20 +165,19 @@ private:
 
 template <typename ElementType>
 ArrayList<ElementType>::ArrayList(size_type capacity) :
-    __data{__allocator.allocate(capacity)}, __size{0}, __capacity{capacity} {
+    __data{AllocatorTraits::allocate(__allocator, capacity)}, __size{0}, __capacity{capacity} {
 }
 
 template <typename ElementType>
 ArrayList<ElementType>::~ArrayList() {
-    clear();
-    __allocator.deallocate(__data, __capacity);
+    __destroyAllElement();
+    AllocatorTraits::deallocate(__allocator, __data, __capacity);
 }
 
 template <typename ElementType>
 void ArrayList<ElementType>::clear() {
-    while (__size--) {
-        __allocator.destroy(__data + __size);
-    }
+    __destroyAllElement();
+    __size = 0;
 }
 
 template <typename ElementType>
@@ -223,10 +225,10 @@ void ArrayList<ElementType>::add(size_type index, const ElementType &element) {
     __ensureCapacity(size() + 1);
     // 这种情况无需移动元素，直接在尾部构造
     if (index == size()) {
-        __allocator.construct(__data + __size++, element);
+        AllocatorTraits::construct(__allocator, __data + __size++, element);
         return;
     }
-    __allocator.construct(__data + __size, __data[__size - 1]);
+    AllocatorTraits::construct(__allocator, __data + __size, __data[__size - 1]);
     // auto it {std::move(rbegin() + 1, rend() - index, rbegin())};
     auto it{std::move_backward(begin() + index, end() - 1, end())};
     *it = element;
@@ -238,7 +240,7 @@ ElementType ArrayList<ElementType>::remove(size_type index) {
     __checkIndex<__ListOperation::REMOVE>(index, size());
     ElementType old{std::move(__data[index])};
     std::move(begin() + index + 1, end(), begin() + index);
-    __allocator.destroy(__data + __size--);
+    AllocatorTraits::destroy(__allocator, __data + __size--);
     __shrinkIfNecessary();
     return old;
 }
@@ -305,12 +307,10 @@ void ArrayList<ElementType>::__reallocToFitNewCapacity(size_type newCapacity) {
     std::cout << "__reallocToFitNewCapacity() [newCapacity = " << newCapacity << ", __capacity = " << __capacity << ", __size = " << __size << "]." << std::endl;
     assert(__size <= newCapacity);
 #endif
-    auto newData{__allocator.allocate(newCapacity)};
-    for (size_type i{0}; i < size(); ++i) {
-        __allocator.construct(newData + i, std::move(__data[i]));
-        __allocator.destroy(__data + i);
-    }
-    __allocator.deallocate(__data, __capacity);
+    auto newData{AllocatorTraits::allocate(__allocator, newCapacity)};
+    std::uninitialized_move(begin(), end(), newData);
+    __destroyAllElement();
+    AllocatorTraits::deallocate(__allocator, __data, __capacity);
     __data = newData;
     __capacity = newCapacity;
 }
@@ -327,6 +327,13 @@ void ArrayList<ElementType>::__shrinkIfNecessary() {
     if (__size < __capacity >> 2) {
         __reallocToFitNewCapacity(__capacity >> 2);
     }
+}
+
+template <typename ElementType>
+void ArrayList<ElementType>::__destroyAllElement() {
+    std::for_each(begin(), end(), [](auto &obj) {
+        AllocatorTraits::destroy(__allocator, &obj);
+    });
 }
 
 template <typename ElementType>

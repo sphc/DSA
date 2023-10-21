@@ -105,14 +105,15 @@ public:
     [[nodiscard]] virtual std::string toString(std::function<std::string(const ElementType &)> toString) const = 0;
 
 protected:
-    enum class _ListOperation;
+    enum class _Operation;
+    using _OperationName = std::string;
 
-    template <_ListOperation operation>
-    static std::string _getOperationName();
+    template <_Operation operation>
+    static _OperationName _getOperationName();
 };
 
 template <typename ElementType>
-enum class List<ElementType>::_ListOperation {
+enum class List<ElementType>::_Operation {
     CLEAR,
     SIZE,
     IS_EMPTY,
@@ -127,29 +128,29 @@ enum class List<ElementType>::_ListOperation {
 };
 
 template <typename ElementType>
-template <typename List<ElementType>::_ListOperation operation>
-std::string List<ElementType>::_getOperationName() {
-    if constexpr (operation == _ListOperation::CLEAR) {
+template <typename List<ElementType>::_Operation operation>
+typename List<ElementType>::_OperationName List<ElementType>::_getOperationName() {
+    if constexpr (operation == _Operation::CLEAR) {
         return "clear";
-    } else if constexpr (operation == _ListOperation::SIZE) {
+    } else if constexpr (operation == _Operation::SIZE) {
         return "size";
-    } else if constexpr (operation == _ListOperation::IS_EMPTY) {
+    } else if constexpr (operation == _Operation::IS_EMPTY) {
         return "isEmpty";
-    } else if constexpr (operation == _ListOperation::CONTAINS) {
+    } else if constexpr (operation == _Operation::CONTAINS) {
         return "contains";
-    } else if constexpr (operation == _ListOperation::ADD) {
+    } else if constexpr (operation == _Operation::ADD) {
         return "add";
-    } else if constexpr (operation == _ListOperation::ADD_BY_INDEX) {
+    } else if constexpr (operation == _Operation::ADD_BY_INDEX) {
         return "add";
-    } else if constexpr (operation == _ListOperation::GET) {
+    } else if constexpr (operation == _Operation::GET) {
         return "get";
-    } else if constexpr (operation == _ListOperation::SET) {
+    } else if constexpr (operation == _Operation::SET) {
         return "set";
-    } else if constexpr (operation == _ListOperation::REMOVE) {
+    } else if constexpr (operation == _Operation::REMOVE) {
         return "remove";
-    } else if constexpr (operation == _ListOperation::INDEX_OF) {
+    } else if constexpr (operation == _Operation::INDEX_OF) {
         return "indexOf";
-    } else if constexpr (operation == _ListOperation::TO_STRING) {
+    } else if constexpr (operation == _Operation::TO_STRING) {
         return "toString";
     } else {
         return "unknow";

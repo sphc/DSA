@@ -1,8 +1,8 @@
 #ifndef __ARRAY_LIST_H__
 #define __ARRAY_LIST_H__
 
+#include "AbstractList.hpp"
 #include <algorithm>
-#include <exception>
 #include <functional>
 #include <iterator>
 #include <limits>
@@ -24,7 +24,7 @@ namespace dsa {
  * @date: 2023-10-18 15:23:00
  */
 template <typename ElementType>
-class ArrayList final {
+class ArrayList final : public AbstractList<ElementType> {
 public:
     using size_type = typename std::allocator<ElementType>::size_type;
     // TODO: check npos
@@ -38,72 +38,87 @@ public:
     ~ArrayList();
 
     /**
-     * 清除集合中的所有元素
+     * @description: 清除集合中的所有元素
+     * @return      {void}
      */
-    void clear();
+    void clear() override;
+
     /**
-     * 获取集合中元素数量
-     * @return: 集合中元素的数量
+     * @description: 获取集合中元素数量
+     * @return      {size_type} 集合中元素的数量
      */
-    [[nodiscard]] size_type size() const;
+    [[nodiscard]] size_type size() const override;
+
     /**
-     * 获取集合能够容纳的元素数量
-     * @return: 集合容量
+     * @description: 检查集合是否有元素
+     * @return      {bool} 无元素返回 true，有元素返回 false
+     */
+    [[nodiscard]] bool isEmpty() const override;
+
+    /**
+     * @description: 查找元素是否出现在集合中
+     * @param       {const ElementType &} element 需要查找的元素
+     * @return      {bool} 存在返回 true，不存在返回 false
+     */
+    [[nodiscard]] bool contains(const ElementType &element) const override;
+
+    /**
+     * @description: 往集合末尾插入元素
+     * @param       {const ElementType &} element 需要插入的元素
+     * @return      {void}
+     */
+    void add(const ElementType &element) override;
+
+    /**
+     * @description: 在集合指定位置处插入元素
+     * @param       {size_type} index 指定位置索引，取值范围 [0, size()]
+     * @param       {ElementType} &element 要插入的元素
+     * @return      {void}
+     */
+    void add(size_type index, const ElementType &element) override;
+
+    /**
+     * @description: 获取集合指定位置处的元素
+     * @param       {size_type} index 指定位置索引，取值范围 [0, size() - 1]
+     * @return      {const ElementType &} 指定位置处的元素
+     */
+    [[nodiscard]] const ElementType &get(size_type index) const override;
+
+    /**
+     * @description: 将集合指定位置处的元素设置为指定元素
+     * @param       {size_type} index 指定位置索引，取值范围 [0, size() - 1]
+     * @param       {const ElementType &} element 要设置的元素
+     * @return      {ElementType} 设置之前的元素
+     */
+    ElementType set(size_type index, const ElementType &element) override;
+
+    /**
+     * @description: 删除集合指定位置处的元素
+     * @param       {size_type} index 指定位置索引，取值范围 [0, size() - 1]
+     * @return      {ElementType} 被删除的元素
+     */
+    ElementType remove(size_type index) override;
+
+    /**
+     * @description: 在集合中获取指定元素的位置索引
+     * @param       {ElementType} &element 指定元素
+     * @return      {size_type} 指定元素所在的位置索引，未找到则返回 ArrayList<ElementType>::npos
+     */
+    [[nodiscard]] size_type indexOf(const ElementType &element) const override;
+
+    /**
+     * @description: 将集合转换为字符串表示，可用于打印等
+     * @param       {function<void(ElementType &)>} toString 将集合中元素转换为字符串的方法
+     * @return      {string} 集合的字符串表示
+     */
+    [[nodiscard]] std::string toString(std::function<std::string(const ElementType &)> toString) const override;
+
+    // 新增方法
+    /**
+     * @description: 获取集合能够容纳的元素数量
+     * @return      {size_type} 集合容量
      */
     [[nodiscard]] size_type capacity() const;
-    /**
-     * 检查集合是否有元素
-     * @return: 无元素则返回 true
-     */
-    [[nodiscard]] bool isEmpty() const;
-    /**
-     * 查找元素是否出现在集合中
-     * @param element: 需要查找的元素
-     * @return: 存在返回 true，不存在返回 false
-     */
-    [[nodiscard]] bool contains(const ElementType &element) const;
-    /**
-     * 往集合末尾插入元素
-     * @param element: 需要插入的元素
-     */
-    void add(const ElementType &element);
-    /**
-     * 获取集合指定位置处的元素
-     * @param index: 指定位置索引，取值范围 [0, size() - 1]
-     * @return: 指定位置处的元素
-     */
-    [[nodiscard]] const ElementType &get(size_type index) const;
-    /**
-     * 将集合指定位置处的元素设置为指定元素
-     * @param index: 指定位置索引，取值范围 [0, size() - 1]
-     * @param element: 要设置的元素
-     * @return: 设置之前的元素
-     */
-    ElementType set(size_type index, const ElementType &element);
-    /**
-     * 在集合指定位置处插入元素
-     * @param index: 指定位置索引，取值范围 [0, size()]
-     * @element: 要插入的元素
-     */
-    void add(size_type index, const ElementType &element);
-    /**
-     * 删除集合指定位置处的元素
-     * @param index: 指定位置索引，取值范围 [0, size() - 1]
-     * @return: 被删除的元素
-     */
-    ElementType remove(size_type index);
-    /**
-     * 在集合中获取指定元素的位置索引
-     * @param element: 指定元素
-     * @return: 指定元素所在的位置索引，未找到则返回 ArrayList<ElementType>::npos
-     */
-    [[nodiscard]] size_type indexOf(const ElementType &element) const;
-    /**
-     * 将集合转换为字符串表示，可用于打印等
-     * @param toString: 将集合中元素转换为字符串的方法
-     * @return: 集合的字符串表示
-     */
-    [[nodiscard]] std::string toString(std::function<void(const ElementType &)> toString) const;
 
 private:
     ElementType *__data;
@@ -113,30 +128,19 @@ private:
     inline static std::allocator<ElementType> __allocator{};
     inline static constexpr size_type __DEFAULT_CAPACITY{10};
 
-    enum class __OperationWithIndex {
-        GET,
-        ADD,
-        SET,
-        REMOVE
-    };
+    using __ListOperation = typename AbstractList<ElementType>::_ListOperation;
+    /**
+     * @description: 是否是需要传入索引参数的操作
+     * @return      {bool} 需要传入索引参数返回 true，否则返回 false
+     */
+    template <__ListOperation Operation>
+    static constexpr bool __isOperationWithIndex();
+    template <__ListOperation Operation>
+    static bool __isValidIndex(size_type index, size_type size);
+    static void __throwOutOfRangeException(const std::string &operation, size_type operatePos, size_type size);
+    template <__ListOperation Operation>
+    static void __checkIndex(size_type index, size_type size);
 
-    inline static std::map<__OperationWithIndex, std::string> __operationName{
-        {__OperationWithIndex::GET, "get"},
-        {__OperationWithIndex::ADD, "add"},
-        {__OperationWithIndex::SET, "set"},
-        {__OperationWithIndex::REMOVE, "remove"}};
-
-    inline static auto __accessIndexValid{
-        [](size_type index, size_type size) { return index < size; }};
-
-    inline static std::map<__OperationWithIndex, std::function<bool(size_type index, size_type size)>> __indexIsValid{
-        {__OperationWithIndex::GET, __accessIndexValid},
-        {__OperationWithIndex::ADD, [](size_type index, size_type size) { return index <= size; }},
-        {__OperationWithIndex::SET, __accessIndexValid},
-        {__OperationWithIndex::REMOVE, __accessIndexValid}};
-
-    void __throwOutOfRangeException(const std::string &operation, size_type operatePos);
-    void __checkIndex(__OperationWithIndex operation, size_type index);
     void __reallocToFitNewCapacity(size_type newCapacity);
     void __ensureCapacity(size_type needCapacity);
     void __shrinkIfNecessary();
@@ -144,6 +148,9 @@ private:
     class iterator;
     iterator begin();
     iterator end();
+    class const_iterator;
+    const_iterator cbegin() const;
+    const_iterator cend() const;
 
     class reverse_iterator;
     reverse_iterator rbegin();
@@ -185,7 +192,7 @@ template <typename ElementType>
 
 template <typename ElementType>
 [[nodiscard]] bool ArrayList<ElementType>::contains(const ElementType &element) const {
-    return std::find(begin(), end(), element) != end();
+    return std::find(cbegin(), cend(), element) != cend();
 }
 
 template <typename ElementType>
@@ -195,13 +202,13 @@ void ArrayList<ElementType>::add(const ElementType &element) {
 
 template <typename ElementType>
 [[nodiscard]] const ElementType &ArrayList<ElementType>::get(size_type index) const {
-    __checkIndex(__OperationWithIndex::GET, index);
+    __checkIndex<__ListOperation::GET>(index, size());
     return __data[index];
 }
 
 template <typename ElementType>
 ElementType ArrayList<ElementType>::set(size_type index, const ElementType &element) {
-    __checkIndex(__OperationWithIndex::SET, index);
+    __checkIndex<__ListOperation::SET>(index, size());
     ElementType old{std::move(__data[index])};
     __data[index] = element;
     return old;
@@ -209,7 +216,7 @@ ElementType ArrayList<ElementType>::set(size_type index, const ElementType &elem
 
 template <typename ElementType>
 void ArrayList<ElementType>::add(size_type index, const ElementType &element) {
-    __checkIndex(__OperationWithIndex::ADD, index);
+    __checkIndex<__ListOperation::ADD_BY_INDEX>(index, size());
     __ensureCapacity(size() + 1);
     // 这种情况无需移动元素，直接在尾部构造
     if (index == size()) {
@@ -225,7 +232,7 @@ void ArrayList<ElementType>::add(size_type index, const ElementType &element) {
 
 template <typename ElementType>
 ElementType ArrayList<ElementType>::remove(size_type index) {
-    __checkIndex(__OperationWithIndex::REMOVE, index);
+    __checkIndex<__ListOperation::REMOVE>(index, size());
     ElementType old{std::move(__data[index])};
     std::move(begin() + index + 1, end(), begin() + index);
     __allocator.destroy(__data + __size--);
@@ -235,16 +242,16 @@ ElementType ArrayList<ElementType>::remove(size_type index) {
 
 template <typename ElementType>
 [[nodiscard]] typename ArrayList<ElementType>::size_type ArrayList<ElementType>::indexOf(const ElementType &element) const {
-    auto it{std::find(begin(), end(), element)};
-    return it != end() ? it - begin() : npos;
+    auto it{std::find(cbegin(), cend(), element)};
+    return it != cend() ? it - cbegin() : npos;
 }
 
 template <typename ElementType>
-[[nodiscard]] std::string ArrayList<ElementType>::toString(std::function<void(const ElementType &)> toString) const {
+[[nodiscard]] std::string ArrayList<ElementType>::toString(std::function<std::string(const ElementType &)> toString) const {
     std::ostringstream sstream{};
     sstream << "[";
-    std::for_each(begin(), end(), [&sstream, &toString](const auto &e) { sstream << toString(e) << ", "; });
-    std::string result{std::move(sstream.str())};
+    std::for_each(cbegin(), cend(), [&sstream, &toString](const auto &e) { sstream << toString(e) << ", "; });
+    std::string result{sstream.str()};
     if (result.size() > 1) {
         result.pop_back();
         result.pop_back();
@@ -254,16 +261,38 @@ template <typename ElementType>
 }
 
 template <typename ElementType>
-void ArrayList<ElementType>::__throwOutOfRangeException(const std::string &operation, size_type operatePos) {
+template <typename ArrayList<ElementType>::__ListOperation Operation>
+constexpr bool ArrayList<ElementType>::__isOperationWithIndex() {
+    return Operation == __ListOperation::ADD_BY_INDEX || Operation == __ListOperation::GET || Operation == __ListOperation::SET || Operation == __ListOperation::REMOVE;
+}
+
+template <typename ElementType>
+template <typename ArrayList<ElementType>::__ListOperation Operation>
+bool ArrayList<ElementType>::__isValidIndex(size_type index, size_type size) {
+    if constexpr (!__isOperationWithIndex<Operation>()) {
+        std::ostringstream sstream;
+        sstream << "operation: " << AbstractList<ElementType>::template _getOperationName<Operation>() << " [no index parameter need to be passed to the operation].";
+        throw std::invalid_argument(sstream.str());
+    }
+    if constexpr (Operation == __ListOperation::ADD_BY_INDEX) {
+        return index <= size;
+    } else {
+        return index < size;
+    }
+}
+
+template <typename ElementType>
+void ArrayList<ElementType>::__throwOutOfRangeException(const std::string &operation, size_type operatePos, size_type size) {
     std::ostringstream sstream{};
-    sstream << "operation: " << operation << " [size of ArrayList: " << size() << ", try to operate at pos: " << operatePos << "].";
+    sstream << "operation: " << operation << " [size of ArrayList: " << size << ", try to operate at pos: " << operatePos << "].";
     throw std::out_of_range(sstream.str());
 }
 
 template <typename ElementType>
-void ArrayList<ElementType>::__checkIndex(__OperationWithIndex operation, size_type index) {
-    if (!__indexIsValid[operation](index, size())) {
-        __throwOutOfRangeException(__operationName[operation], index);
+template <typename ArrayList<ElementType>::__ListOperation Operation>
+void ArrayList<ElementType>::__checkIndex(size_type index, size_type size) {
+    if (!__isValidIndex<Operation>(index, size)) {
+        __throwOutOfRangeException(AbstractList<ElementType>::template _getOperationName<Operation>(), index, size);
     }
 }
 
@@ -341,7 +370,7 @@ public:
         return *this;
     }
 
-    difference_type operator-(const iterator &rhs) {
+    difference_type operator-(iterator rhs) {
         return __cur - rhs.__cur;
     }
 
@@ -375,11 +404,101 @@ public:
         return __cur;
     }
 
-    bool operator==(const iterator &rhs) {
+    bool operator==(iterator rhs) {
         return __cur == rhs.__cur;
     }
 
-    bool operator!=(const iterator &rhs) {
+    bool operator!=(iterator rhs) {
+        return !(*this == rhs);
+    }
+
+private:
+    pointer __cur;
+};
+
+template <typename ElementType>
+class ArrayList<ElementType>::const_iterator {
+public:
+    // iterator traits
+    using difference_type = typename std::allocator<ElementType>::difference_type;
+    using value_type = ElementType;
+    using pointer = const value_type *;
+    using reference = const value_type &;
+    using iterator_category = std::bidirectional_iterator_tag;
+
+    const_iterator(pointer pos) :
+        __cur{pos} {
+    }
+    const_iterator(const const_iterator &rhs) :
+        __cur{rhs.__cur} {
+    }
+    const_iterator(const_iterator &&rhs) :
+        __cur{rhs.__cur} {
+    }
+    const_iterator &operator=(const const_iterator &rhs) {
+        __cur = rhs.__cur;
+    }
+    const_iterator &operator=(const_iterator &&rhs) {
+        __cur = rhs.__cur;
+    }
+
+    const_iterator operator+(size_type step) {
+        return iterator{__cur + step};
+    }
+
+    const_iterator &operator+=(size_type step) {
+        __cur += step;
+        return *this;
+    }
+
+    const_iterator operator-(size_type step) {
+        return iterator{__cur - step};
+    }
+
+    const_iterator &operator-=(size_type step) {
+        __cur -= step;
+        return *this;
+    }
+
+    difference_type operator-(const_iterator rhs) {
+        return __cur - rhs.__cur;
+    }
+
+    const_iterator &operator++() {
+        ++__cur;
+        return *this;
+    }
+
+    const_iterator &operator--() {
+        --__cur;
+        return *this;
+    }
+
+    const_iterator operator++(int _) {
+        pointer old = __cur;
+        ++__cur;
+        return iterator{old};
+    }
+
+    const_iterator operator--(int _) {
+        pointer old = __cur;
+        --__cur;
+        return iterator{old};
+    }
+
+    reference operator*() {
+        return *__cur;
+    }
+
+    pointer operator->() {
+        return __cur;
+    }
+
+    bool operator==(const_iterator rhs) {
+        return __cur == rhs.__cur;
+    }
+
+    bool operator!=(const_iterator rhs) {
         return !(*this == rhs);
     }
 
@@ -431,7 +550,7 @@ public:
         return *this;
     }
 
-    difference_type operator-(const reverse_iterator &rhs) {
+    difference_type operator-(reverse_iterator rhs) {
         return rhs.__cur - __cur;
     }
 
@@ -465,11 +584,11 @@ public:
         return __cur - 1;
     }
 
-    bool operator==(const reverse_iterator &rhs) {
+    bool operator==(reverse_iterator rhs) {
         return __cur == rhs.__cur;
     }
 
-    bool operator!=(const reverse_iterator &rhs) {
+    bool operator!=(reverse_iterator rhs) {
         return !(*this == rhs);
     }
 
@@ -485,6 +604,16 @@ typename ArrayList<ElementType>::iterator ArrayList<ElementType>::begin() {
 template <typename ElementType>
 typename ArrayList<ElementType>::iterator ArrayList<ElementType>::end() {
     return iterator{__data + __size};
+}
+
+template <typename ElementType>
+typename ArrayList<ElementType>::const_iterator ArrayList<ElementType>::cbegin() const {
+    return const_iterator{__data};
+}
+
+template <typename ElementType>
+typename ArrayList<ElementType>::const_iterator ArrayList<ElementType>::cend() const {
+    return const_iterator{__data + __size};
 }
 
 template <typename ElementType>

@@ -137,6 +137,7 @@ private:
     void __ensureCapacity(size_type needCapacity);
     void __shrinkIfNecessary();
     void __destroyAllElement();
+    static size_type __initCapacity(size_type capacity);
 
     class iterator;
     iterator begin();
@@ -152,7 +153,7 @@ private:
 
 template <typename ElementType>
 ArrayList<ElementType>::ArrayList(size_type capacity) :
-    __data{AllocatorTraits::allocate(__allocator, capacity)}, __size{0}, __capacity{capacity} {
+    __data{AllocatorTraits::allocate(__allocator, __initCapacity(capacity))}, __size{0}, __capacity{__initCapacity(capacity)} {
 }
 
 template <typename ElementType>
@@ -286,6 +287,11 @@ void ArrayList<ElementType>::__destroyAllElement() {
     std::for_each(begin(), end(), [](auto &obj) {
         AllocatorTraits::destroy(__allocator, &obj);
     });
+}
+
+template <typename ElementType>
+typename ArrayList<ElementType>::size_type ArrayList<ElementType>::__initCapacity(size_type capacity) {
+    return capacity < __DEFAULT_CAPACITY ? __DEFAULT_CAPACITY : capacity;
 }
 
 template <typename ElementType>

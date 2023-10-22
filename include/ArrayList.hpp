@@ -9,8 +9,6 @@
 #include <map>
 #include <memory>
 #include <numeric>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 
 #ifdef DEBUG
@@ -134,17 +132,6 @@ private:
     inline static constexpr size_type __DEFAULT_CAPACITY{10};
 
     using __ListOperation = typename AbstractList<ElementType>::_Operation;
-    /**
-     * @description: 是否是需要传入索引参数的操作
-     * @return      {bool} 需要传入索引参数返回 true，否则返回 false
-     */
-    template <__ListOperation Operation>
-    static constexpr bool __isOperationWithIndex();
-    template <__ListOperation Operation>
-    static bool __isValidIndex(size_type index, size_type size);
-    static void __throwOutOfRangeException(const std::string &operation, size_type operatePos, size_type size);
-    template <__ListOperation Operation>
-    static void __checkIndex(size_type index, size_type size);
 
     void __reallocToFitNewCapacity(size_type newCapacity);
     void __ensureCapacity(size_type needCapacity);
@@ -208,13 +195,13 @@ void ArrayList<ElementType>::add(const ElementType &element) {
 
 template <typename ElementType>
 [[nodiscard]] const ElementType &ArrayList<ElementType>::get(size_type index) const {
-    __checkIndex<__ListOperation::GET>(index, size());
+    AbstractList<ElementType>::template _checkIndex<__ListOperation::GET>(index, size());
     return __data[index];
 }
 
 template <typename ElementType>
 ElementType ArrayList<ElementType>::set(size_type index, const ElementType &element) {
-    __checkIndex<__ListOperation::SET>(index, size());
+    AbstractList<ElementType>::template _checkIndex<__ListOperation::SET>(index, size());
     ElementType old{std::move(__data[index])};
     __data[index] = element;
     return old;
@@ -222,7 +209,7 @@ ElementType ArrayList<ElementType>::set(size_type index, const ElementType &elem
 
 template <typename ElementType>
 void ArrayList<ElementType>::add(size_type index, const ElementType &element) {
-    __checkIndex<__ListOperation::ADD_BY_INDEX>(index, size());
+    AbstractList<ElementType>::template _checkIndex<__ListOperation::ADD_BY_INDEX>(index, size());
     __ensureCapacity(size() + 1);
     // 这种情况无需移动元素，直接在尾部构造
     if (index == size()) {
@@ -238,7 +225,7 @@ void ArrayList<ElementType>::add(size_type index, const ElementType &element) {
 
 template <typename ElementType>
 ElementType ArrayList<ElementType>::remove(size_type index) {
-    __checkIndex<__ListOperation::REMOVE>(index, size());
+    AbstractList<ElementType>::template _checkIndex<__ListOperation::REMOVE>(index, size());
     ElementType old{std::move(__data[index])};
     std::move(begin() + index + 1, end(), begin() + index);
     AllocatorTraits::destroy(__allocator, __data + __size--);
@@ -264,42 +251,6 @@ template <typename ElementType>
     }
     result += "]";
     return result;
-}
-
-template <typename ElementType>
-template <typename ArrayList<ElementType>::__ListOperation Operation>
-constexpr bool ArrayList<ElementType>::__isOperationWithIndex() {
-    return Operation == __ListOperation::ADD_BY_INDEX || Operation == __ListOperation::GET || Operation == __ListOperation::SET || Operation == __ListOperation::REMOVE;
-}
-
-template <typename ElementType>
-template <typename ArrayList<ElementType>::__ListOperation Operation>
-bool ArrayList<ElementType>::__isValidIndex(size_type index, size_type size) {
-    if constexpr (!__isOperationWithIndex<Operation>()) {
-        std::ostringstream sstream;
-        sstream << "operation: " << AbstractList<ElementType>::template _getOperationName<Operation>() << " [no index parameter need to be passed to the operation].";
-        throw std::invalid_argument(sstream.str());
-    }
-    if constexpr (Operation == __ListOperation::ADD_BY_INDEX) {
-        return index <= size;
-    } else {
-        return index < size;
-    }
-}
-
-template <typename ElementType>
-void ArrayList<ElementType>::__throwOutOfRangeException(const std::string &operation, size_type operatePos, size_type size) {
-    std::ostringstream sstream{};
-    sstream << "operation: " << operation << " [size of ArrayList: " << size << ", try to operate at pos: " << operatePos << "].";
-    throw std::out_of_range(sstream.str());
-}
-
-template <typename ElementType>
-template <typename ArrayList<ElementType>::__ListOperation Operation>
-void ArrayList<ElementType>::__checkIndex(size_type index, size_type size) {
-    if (!__isValidIndex<Operation>(index, size)) {
-        __throwOutOfRangeException(AbstractList<ElementType>::template _getOperationName<Operation>(), index, size);
-    }
 }
 
 template <typename ElementType>

@@ -105,57 +105,7 @@ public:
     [[nodiscard]] virtual std::string toString(std::function<std::string(const ElementType &)> toString) const = 0;
 
 protected:
-    enum class _Operation;
-    using _OperationName = std::string;
-
-    template <_Operation operation>
-    static _OperationName _getOperationName();
 };
-
-template <typename ElementType>
-enum class List<ElementType>::_Operation {
-    CLEAR,
-    SIZE,
-    IS_EMPTY,
-    CONTAINS,
-    ADD,
-    ADD_BY_INDEX,
-    GET,
-    SET,
-    REMOVE,
-    INDEX_OF,
-    TO_STRING
-};
-
-template <typename ElementType>
-template <typename List<ElementType>::_Operation operation>
-typename List<ElementType>::_OperationName List<ElementType>::_getOperationName() {
-    if constexpr (operation == _Operation::CLEAR) {
-        return "clear";
-    } else if constexpr (operation == _Operation::SIZE) {
-        return "size";
-    } else if constexpr (operation == _Operation::IS_EMPTY) {
-        return "isEmpty";
-    } else if constexpr (operation == _Operation::CONTAINS) {
-        return "contains";
-    } else if constexpr (operation == _Operation::ADD) {
-        return "add";
-    } else if constexpr (operation == _Operation::ADD_BY_INDEX) {
-        return "add";
-    } else if constexpr (operation == _Operation::GET) {
-        return "get";
-    } else if constexpr (operation == _Operation::SET) {
-        return "set";
-    } else if constexpr (operation == _Operation::REMOVE) {
-        return "remove";
-    } else if constexpr (operation == _Operation::INDEX_OF) {
-        return "indexOf";
-    } else if constexpr (operation == _Operation::TO_STRING) {
-        return "toString";
-    } else {
-        return "unknow";
-    }
-}
 
 template <typename ElementType>
 List<ElementType>::~List() {

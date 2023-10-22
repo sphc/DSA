@@ -174,6 +174,7 @@ ArrayList<ElementType>::~ArrayList() {
     AllocatorTraits::deallocate(__allocator, __data, __capacity);
 }
 
+// checked
 template <typename ElementType>
 void ArrayList<ElementType>::clear() {
     __destroyAllElement();
@@ -362,7 +363,7 @@ public:
         __cur = rhs.__cur;
     }
 
-    iterator operator+(size_type step) {
+    iterator operator+(size_type step) const {
         return iterator{__cur + step};
     }
 
@@ -371,7 +372,7 @@ public:
         return *this;
     }
 
-    iterator operator-(size_type step) {
+    iterator operator-(size_type step) const {
         return iterator{__cur - step};
     }
 
@@ -380,7 +381,7 @@ public:
         return *this;
     }
 
-    difference_type operator-(iterator rhs) {
+    difference_type operator-(iterator rhs) const {
         return __cur - rhs.__cur;
     }
 
@@ -406,19 +407,19 @@ public:
         return iterator{old};
     }
 
-    reference operator*() {
+    reference operator*() const {
         return *__cur;
     }
 
-    pointer operator->() {
+    pointer operator->() const {
         return __cur;
     }
 
-    bool operator==(iterator rhs) {
+    bool operator==(iterator rhs) const {
         return __cur == rhs.__cur;
     }
 
-    bool operator!=(iterator rhs) {
+    bool operator!=(iterator rhs) const {
         return !(*this == rhs);
     }
 
@@ -452,7 +453,7 @@ public:
         __cur = rhs.__cur;
     }
 
-    const_iterator operator+(size_type step) {
+    const_iterator operator+(size_type step) const {
         return iterator{__cur + step};
     }
 
@@ -461,7 +462,7 @@ public:
         return *this;
     }
 
-    const_iterator operator-(size_type step) {
+    const_iterator operator-(size_type step) const {
         return iterator{__cur - step};
     }
 
@@ -470,7 +471,7 @@ public:
         return *this;
     }
 
-    difference_type operator-(const_iterator rhs) {
+    difference_type operator-(const_iterator rhs) const {
         return __cur - rhs.__cur;
     }
 
@@ -496,19 +497,19 @@ public:
         return iterator{old};
     }
 
-    reference operator*() {
+    reference operator*() const {
         return *__cur;
     }
 
-    pointer operator->() {
+    pointer operator->() const {
         return __cur;
     }
 
-    bool operator==(const_iterator rhs) {
+    bool operator==(const_iterator rhs) const {
         return __cur == rhs.__cur;
     }
 
-    bool operator!=(const_iterator rhs) {
+    bool operator!=(const_iterator rhs) const {
         return !(*this == rhs);
     }
 

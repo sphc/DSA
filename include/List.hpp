@@ -103,8 +103,6 @@ public:
      * @return      {string} 集合的字符串表示
      */
     [[nodiscard]] virtual std::string toString(std::function<std::string(const ElementType &)> toString) const = 0;
-
-protected:
 };
 
 template <typename ElementType>

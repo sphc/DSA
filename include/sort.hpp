@@ -10,7 +10,6 @@
 #define __SORT_H__
 
 #include "heap_operation.hpp"
-#include "utility.hpp"
 #include <utility>
 #include <vector>
 
@@ -33,7 +32,7 @@ void heapsort(std::vector<ElementType> &elements) {
     buildHeap(elements);
     decltype(elements.size()) end{elements.size()};
     while (1 < end) {
-        swap(std::move(elements[0]), std::move(elements[--end]));
+        std::swap(elements[0], elements[--end]);
         reshapeDown(elements, 0, end - 1);
     }
 }

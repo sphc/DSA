@@ -22,6 +22,8 @@ class PQType {
 public:
     using size_type = std::size_t;
     PQType() = default;
+    PQType(const PQType &) = default;
+    PQType &operator=(const PQType &) = default;
 
     /**
      * @description: 将队列置空
